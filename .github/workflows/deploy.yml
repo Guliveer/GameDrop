@@ -1,0 +1,113 @@
+name: Deploy
+
+# Deploys the worker image to Fly.io and, when the Machine ID is configured,
+# points the existing Scheduled Machine at the new image.
+#
+# Why not `fly deploy` alone: `fly deploy` manages Fly Launch Machines. A
+# Scheduled Machine created with `fly machine run --schedule` is intentionally
+# outside that management, so deploying with `fly deploy` would create or update
+# a different Machine and leave the scheduled one on the old image.
+#
+# This workflow therefore:
+#   1. runs the full test suite, build, and image build (same gates as CI),
+#   2. builds and pushes the image with `fly deploy --build-only --push`,
+#   3. updates the existing Machine's image in place with `fly machine update`,
+#      which preserves its schedule, region, env, and attached volume.
+#
+# Required configuration:
+#   secrets.FLY_API_TOKEN   - Fly.io deploy token
+#   vars.FLY_APP_NAME       - Fly app name (optional; defaults to gamedrop)
+#   vars.FLY_MACHINE_ID     - Scheduled Machine ID (optional; see the notice
+#                             step when unset)
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Never run two deployments at once; never cancel a running deployment halfway.
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    name: Verify
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Verify formatting
+        run: |
+          unformatted="$(gofmt -l .)"
+          if [ -n "$unformatted" ]; then
+            echo "The following files need gofmt:"
+            echo "$unformatted"
+            exit 1
+          fi
+
+      - name: Vet
+        run: go vet ./...
+
+      - name: Test with race detector
+        run: go test -race ./...
+
+      - name: Build image
+        run: docker build -t gamedrop:ci .
+
+  deploy:
+    name: Push image and update Scheduled Machine
+    needs: verify
+    # Only the main branch deploys. Pull requests (including forks) never reach
+    # this job, and no repository secrets are exposed to them.
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up flyctl
+        uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: Build and push image
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+          FLY_APP_NAME: ${{ vars.FLY_APP_NAME || 'gamedrop' }}
+          IMAGE_LABEL: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          flyctl deploy --app "$FLY_APP_NAME" --build-only --push \
+            --image-label "${IMAGE_LABEL:0:12}" --yes
+
+      - name: Update Scheduled Machine image
+        if: vars.FLY_MACHINE_ID != ''
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+          FLY_APP_NAME: ${{ vars.FLY_APP_NAME || 'gamedrop' }}
+          FLY_MACHINE_ID: ${{ vars.FLY_MACHINE_ID }}
+          IMAGE_LABEL: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          # --skip-start keeps flyctl from launching the Machine out of schedule;
+          # the next scheduled run picks up the new image. Everything else
+          # (schedule, region, env, volume) is preserved by machine update.
+          flyctl machine update "$FLY_MACHINE_ID" \
+            --app "$FLY_APP_NAME" \
+            --image "registry.fly.io/${FLY_APP_NAME}:${IMAGE_LABEL:0:12}" \
+            --skip-start --yes
+          flyctl machine list --app "$FLY_APP_NAME"
+
+      - name: Manual update required
+        if: vars.FLY_MACHINE_ID == ''
+        run: |
+          echo "::notice::FLY_MACHINE_ID is not configured. The image was pushed, but the Scheduled Machine was not updated. Set the repository variable FLY_MACHINE_ID (see docs/fly-deployment.md) or run: flyctl machine update <machine-id> --image registry.fly.io/${{ vars.FLY_APP_NAME || 'gamedrop' }}:${GITHUB_SHA:0:12} --skip-start --yes"

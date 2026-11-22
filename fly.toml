@@ -1,0 +1,41 @@
+# Fly.io configuration for GameDrop.
+#
+# IMPORTANT: GameDrop is a one-shot worker, not a web service. This file exists
+# so `fly machine run` inherits the environment, mount, and VM defaults, and so
+# `fly deploy --build-only --push` knows how to build the image.
+#
+# Do NOT run a plain `fly deploy` against this app: it would create an
+# always-running Machine that repeatedly executes the worker. The scheduled
+# Machine must be created explicitly with `fly machine run --schedule`, as
+# described in README.md and docs/fly-deployment.md.
+app = "gamedrop"
+primary_region = "fra"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  APP_MODE = "production"
+  LOG_LEVEL = "info"
+  DATABASE_PATH = "/data/offers.db"
+  STORE_COUNTRIES = "PL"
+  STORE_LOCALE = "pl-PL"
+  ENABLE_STEAM = "true"
+  ENABLE_EPIC = "true"
+  ENABLE_GOG = "true"
+  ENABLE_PRIME = "false"
+  MAX_CONCURRENCY = "4"
+  SOURCE_TIMEOUT_SEC = "45s"
+
+# The persistent volume backing SQLite. Created once with
+#   fly volumes create gamedrop_data --region fra --size 1
+# and attached to the scheduled Machine with --volume gamedrop_data:/data.
+[[mounts]]
+  source = "gamedrop_data"
+  destination = "/data"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "256mb"
+
+# No [[services]] and no [http_service]: GameDrop exposes no ports.

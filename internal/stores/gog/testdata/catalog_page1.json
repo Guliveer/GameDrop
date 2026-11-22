@@ -1,0 +1,46 @@
+{
+  "productCount": 3117,
+  "currentlyShownProductCount": 48,
+  "products": [
+    {
+      "id": "1207658787",
+      "slug": "heroes_of_might_and_magic_3_complete_edition",
+      "title": "Heroes of Might and Magic 3: Complete",
+      "productType": "game",
+      "storeLink": "https://www.gog.com/pl/game/heroes_of_might_and_magic_3_complete_edition",
+      "coverHorizontal": "https://images.gog-statics.com/cover-a.png",
+      "price": {
+        "final": "19.75 zł",
+        "base": "39.49 zł",
+        "discount": "-50%",
+        "finalMoney": { "amount": "19.75", "currency": "PLN", "discount": "19.74" },
+        "baseMoney": { "amount": "39.49", "currency": "PLN" }
+      }
+    },
+    {
+      "id": "333444",
+      "slug": "free_forever",
+      "title": "Free Forever",
+      "productType": "game",
+      "storeLink": "/pl/game/free_forever",
+      "coverHorizontal": "https://images.gog-statics.com/free.png",
+      "price": {
+        "final": "0.00 zł",
+        "base": "0.00 zł",
+        "discount": "",
+        "finalMoney": { "amount": "0.00", "currency": "PLN" },
+        "baseMoney": { "amount": "0.00", "currency": "PLN" }
+      }
+    },
+    {
+      "id": "",
+      "slug": "broken_entry",
+      "title": "Broken Entry",
+      "price": {
+        "finalMoney": { "amount": "0.00", "currency": "PLN" },
+        "baseMoney": { "amount": "10.00", "currency": "PLN" },
+        "discount": "-100%"
+      }
+    }
+  ]
+}

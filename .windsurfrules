@@ -1,0 +1,42 @@
+GameDrop — Windsurf rules (authoritative set: AGENTS.md)
+
+PROJECT
+- Headless Go free-game collector. One process invocation = one collection cycle
+  (fetch Steam/Epic/GOG → persist SQLite → Telegram outbox → exit).
+- Deployed as one Fly.io Scheduled Machine with one Fly Volume. No server, no API,
+  no UI, no in-app scheduler. Never introduce one.
+
+STRUCTURE
+- cmd/gamedrop: wiring + exit codes only (0 ok/partial, 1 failure, 2 bad config).
+- internal/stores/<store>: adapter parsing/classification only; never imports
+  storage or notify.
+- internal/storage: SQLite, migrations, transactions, outbox rows.
+- internal/collector: orchestration, concurrency, expiry, notification policy.
+- internal/notify: rendering, Telegram sender, outbox processor.
+
+HARD RULES
+- free_to_keep requires verified 100% discount from a non-zero original price;
+  otherwise unknown or skip. Never classify from a zero price alone.
+- Zero time.Time means unknown; never invent starts/ends.
+- Absent from a scan → mark missing only. Expiry requires a passed ends_at.
+- Failed/partial source writes nothing; previous data is preserved.
+- Offer identity is (store, country, store_offer_id); never dedupe by title.
+- Notifications: transactional outbox, at-least-once, dedupe keys; do not claim
+  exactly-once.
+- Only dependency: modernc.org/sqlite. .env loading is built in (internal/envfile,
+  real env wins); no dotenv package, no PostgreSQL, no broker.
+- Never log or commit secrets (tokens, chat IDs, cookies, .env).
+- English in code, comments, tests, docs.
+
+STYLE
+- gofmt clean, go vet clean, %w-wrapped errors, context propagated, structured
+  slog with stable keys, no global mutable state.
+
+TESTS
+- Offline only: httptest + testdata fixtures, t.TempDir() databases, injected
+  clocks. Add a fixture regression test with every parser fix.
+
+VERIFY
+- gofmt -l . (empty), go vet ./..., go test ./..., go build ./...
+
+Do not commit, push, or deploy unless the user explicitly asks.

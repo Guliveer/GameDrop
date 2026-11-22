@@ -1,0 +1,50 @@
+---
+description: GameDrop repository rules — headless Go free-game collector (one cycle per run, SQLite on a Fly Volume, Telegram outbox)
+globs:
+  - "**/*.go"
+  - "**/*.md"
+  - "**/*.toml"
+  - "**/*.yml"
+  - "Dockerfile"
+alwaysApply: true
+---
+
+# GameDrop rules
+
+Authoritative source: [`AGENTS.md`](../../AGENTS.md). Summary for Cursor:
+
+## Shape of the system
+
+- One invocation = one collection cycle. `cmd/gamedrop/main.go` wires and exits;
+  there is no server, API, UI, or in-app scheduler. Never add one.
+- Adapters live in `internal/stores/<store>/`, persist through
+  `internal/storage` only, and never import `notify`.
+- `internal/collector` owns orchestration, concurrency, expiry and notification
+  policy. `internal/notify` owns rendering and the outbox processor.
+- Deployment: one Fly.io Scheduled Machine + one volume. Never suggest a plain
+  `fly deploy`; it would create an always-running Machine.
+
+## Domain rules (do not relax)
+
+- `free_to_keep` requires verified evidence: 100% discount from a non-zero
+  original price (Steam `appdetails`, Epic `discountPercentage == 0`, GOG
+  `finalMoney == 0 && baseMoney > 0`). Otherwise `unknown` or skip.
+- Zero `time.Time` = unknown deadline. Never invent dates.
+- Missing from a scan → `missing_since` only; expiry requires a passed `ends_at`.
+- Failed or partial source → write nothing; keep previous data.
+- Identity is `(store, country, store_offer_id)`; never dedupe by title.
+- Notifications are at-least-once via a transactional outbox with dedupe keys.
+
+## Implementation conventions
+
+- Go 1.27, standard library first; only `modernc.org/sqlite` as a dependency.
+- Errors wrapped with `%w`; `context.Context` propagated; `slog` with stable keys
+  (`run_id`, `source`, `country`, `offer_id`, `duration_ms`, `status`, `error`).
+- Never log secrets (bot tokens, chat IDs, cookies) or URLs with query strings.
+- Tests: offline, `httptest` + `testdata/` fixtures, `t.TempDir()` databases,
+  injected clocks. Add a fixture regression test with every parser fix.
+
+## Verify
+
+`gofmt -l .` (empty), `go vet ./...`, `go test ./...`, `go build ./...`. Do not
+commit, push, or deploy unless asked.

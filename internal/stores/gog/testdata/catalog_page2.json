@@ -1,0 +1,35 @@
+{
+  "productCount": 3117,
+  "currentlyShownProductCount": 2,
+  "products": [
+    {
+      "id": "111222",
+      "slug": "giveaway_game",
+      "title": "GOG Giveaway",
+      "productType": "game",
+      "storeLink": "https://www.gog.com/pl/game/giveaway_game",
+      "coverHorizontal": "https://images.gog-statics.com/giveaway.png",
+      "price": {
+        "final": "0.00 zł",
+        "base": "59.99 zł",
+        "discount": "-100%",
+        "finalMoney": { "amount": "0.00", "currency": "PLN", "discount": "59.99" },
+        "baseMoney": { "amount": "59.99", "currency": "PLN" }
+      }
+    },
+    {
+      "id": "555666",
+      "slug": "suspicious_zero_price",
+      "title": "Suspicious Zero Price",
+      "productType": "game",
+      "storeLink": "https://www.gog.com/pl/game/suspicious_zero_price",
+      "price": {
+        "final": "0.00 zł",
+        "base": "59.99 zł",
+        "discount": "-10%",
+        "finalMoney": { "amount": "0.00", "currency": "PLN" },
+        "baseMoney": { "amount": "59.99", "currency": "PLN" }
+      }
+    }
+  ]
+}

@@ -1,0 +1,41 @@
+# Cline rules — GameDrop
+
+Authoritative instructions: [`AGENTS.md`](AGENTS.md). This file is the condensed
+version Cline should apply to every task.
+
+## Never change the nature of the application
+
+GameDrop is a headless Go worker that runs exactly one collection cycle per
+invocation and exits. Do not add an HTTP server, web UI, public API, accounts,
+background scheduler, ticker loop, or message broker.
+
+## Keep the data model honest
+
+- `free_to_keep` requires verified evidence: a 100% discount from a non-zero
+  original price. If evidence is missing, store `unknown` or skip the offer.
+- The zero `time.Time` means "unknown deadline". Never fabricate start/end times.
+- Absence from a scan → `missing_since` only. Expiration requires `ends_at` in the
+  past. A failed or partial source writes nothing.
+- Offer identity is `(store, country, store_offer_id)`; never deduplicate by title
+  and never merge regional variants.
+
+## Implementation constraints
+
+- Go 1.27, `gofmt` clean, `go vet` clean. Only third-party dependency:
+  `modernc.org/sqlite` (keeps `CGO_ENABLED=0` builds working).
+- Configuration comes from environment variables plus an optional `.env` loaded
+  by `internal/envfile` (real environment variables win). Do not add a dotenv
+  library.
+- Errors wrapped with `%w`; `context.Context` propagated through all I/O; logging
+  via `log/slog` with stable keys (`run_id`, `source`, `country`, `offer_id`,
+  `duration_ms`, `status`, `error`).
+- Never log, print, or commit secrets: bot tokens, chat IDs, cookies, `.env` files.
+- Code, comments, tests, and documentation in English.
+
+## Tests and verification
+
+- Tests must be offline: `httptest` + `testdata/` fixtures, `t.TempDir()` SQLite
+  databases, injected clocks. No `time.Sleep`, no live store calls.
+- Run `gofmt -l .`, `go vet ./...`, `go test ./...`, `go build ./...` before
+  reporting success, and state which checks could not run.
+- Do not commit, push, or deploy unless explicitly asked.
