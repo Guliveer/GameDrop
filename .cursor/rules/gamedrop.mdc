@@ -43,8 +43,6 @@ Authoritative source: [`AGENTS.md`](../../AGENTS.md). Summary for Cursor:
 - Never log secrets (bot tokens, chat IDs, cookies) or URLs with query strings.
 - Tests: offline, `httptest` + `testdata/` fixtures, `t.TempDir()` databases,
   injected clocks. Add a fixture regression test with every parser fix.
-- Commit messages: what changed and why only. Never add attribution or
-  `Co-Authored-By` trailers.
 
 ## Verify
 

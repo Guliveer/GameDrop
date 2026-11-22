@@ -31,8 +31,6 @@ the notification outbox (`internal/notify`). Notifications go to Telegram.
 - Do not log or embed secrets (bot tokens, chat IDs, cookies, `.env` contents).
 - Do not claim exactly-once notification delivery; the outbox is at-least-once.
 - Keep documentation and comments in English.
-- Never add attribution to commits, code, or docs: no `Co-Authored-By`, no
-  "Generated with …", no tool names.
 
 ## Tests
 

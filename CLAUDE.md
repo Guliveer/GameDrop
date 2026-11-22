@@ -38,6 +38,3 @@ instead of assuming it passes.
 
 Do not create commits, push branches, open pull requests, or deploy unless the
 user explicitly asks.
-
-When you do commit: write what changed and why, and never add attribution of any
-kind — no `Co-Authored-By`, no "Generated with …", no tool names.
