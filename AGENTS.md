@@ -20,8 +20,9 @@ Do not add them.
 ## Commands
 
 ```bash
-go run ./cmd/gamedrop        # one cycle (dev defaults: ./gamedrop.db, no Telegram)
-./scripts/run.sh             # same, via the helper script (scripts\run.bat on Windows)
+go run ./cmd/gamedrop --setup  # first-run wizard: .env, Telegram check, first cycle
+go run ./cmd/gamedrop          # one cycle (dev defaults: ./gamedrop.db, no Telegram)
+./scripts/run.sh               # same, via the helper script (scripts\run.bat on Windows)
 go build ./...               # compile everything
 go test ./...                # full offline test suite
 go test ./internal/storage -run TestApplyExpiration -v
@@ -39,7 +40,9 @@ it, a Windows host without a C compiler cannot.
 ## Repository map
 
 ```
-cmd/gamedrop/main.go        wiring, exit codes (0 ok/partial, 1 failure, 2 bad config)
+cmd/gamedrop/main.go        wiring, --setup dispatch, exit codes (0 ok/partial, 1 failure, 2 bad config)
+internal/app                the collection cycle used by main and by the wizard
+internal/setup              first-run wizard: prompts, .env writing, Telegram checks
 internal/config             env parsing + aggregated validation
 internal/envfile            .env loader (no dependency, real env wins)
 internal/logger             slog (text dev, JSON production)
@@ -50,8 +53,8 @@ internal/stores             Adapter interface + registry
 internal/storage            SQLite schema, migrations, offers, history, runs, outbox
 internal/notify             rendering, Telegram sender, outbox processor
 internal/collector          cycle orchestration, concurrency, notification policy
-docs/                       architecture, development, testing, stores, database,
-                            notifications, configuration, operations, ADRs
+docs/                       getting started, architecture, development, testing, stores,
+                            database, notifications, configuration, operations, ADRs
 ```
 
 ## Non-negotiable rules

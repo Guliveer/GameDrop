@@ -27,6 +27,17 @@ Defaults are safe for development: `APP_MODE=development`, SQLite at
 `./gamedrop.db`, Poland as the storefront country, Prime disabled, Telegram
 disabled (no credentials).
 
+## First run
+
+```bash
+go run ./cmd/gamedrop --setup   # or ./scripts/setup.sh / scripts\setup.bat
+```
+
+The wizard asks for a country and (optionally) a Telegram bot, writes or updates
+`.env`, verifies the token with `getMe`, finds the chat ID from `getUpdates`, and
+offers to run the first cycle. It is the friendlier path for anyone who does not
+want to edit configuration files; see [getting-started.md](getting-started.md).
+
 ## Run one cycle
 
 ```bash

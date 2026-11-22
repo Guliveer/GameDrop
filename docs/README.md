@@ -7,6 +7,7 @@ maintainers. All documentation is written in English.
 
 | Document | Contents |
 |---|---|
+| [Getting started](getting-started.md) | First run without technical steps: wizard, Telegram, first cycle, troubleshooting |
 | [Configuration](configuration.md) | Every environment variable, defaults per mode, validation rules, example configurations |
 | [Fly.io deployment](fly-deployment.md) | App/volume/Machine creation, image updates, secrets, logs, recovery, backups |
 | [Operations](operations.md) | Log fields, run statuses, incident playbooks, monitoring, retention |
@@ -31,6 +32,7 @@ maintainers. All documentation is written in English.
 ## Quick reference
 
 ```bash
+go run ./cmd/gamedrop --setup  # first-run wizard: .env, Telegram, first cycle
 go run ./cmd/gamedrop          # one collection cycle
 go test ./...                  # all tests (offline)
 gofmt -l . && go vet ./...     # formatting and static checks

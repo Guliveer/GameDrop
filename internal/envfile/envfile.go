@@ -105,6 +105,13 @@ func Load(path string) (Result, error) {
 	return result, nil
 }
 
+// ParseLine parses a single KEY=VALUE line. ok is false for blank lines and
+// comments. It is exported for tools that edit env files in place, so that they
+// agree with the loader on quoting and whitespace.
+func ParseLine(line string) (key, value string, ok bool, err error) {
+	return parseLine(line)
+}
+
 // parseLine turns one line into a key/value pair. ok is false for blank lines
 // and comments.
 func parseLine(line string) (key, value string, ok bool, err error) {

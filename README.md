@@ -11,6 +11,22 @@ persist them, notify, record the run summary, exit. There is no server, no publi
 API, no accounts, and no in-app scheduler. The scheduler is the deployment
 platform — a Fly.io Scheduled Machine started by `fly machine run --schedule`.
 
+## Start here: five-minute setup
+
+You do not need to edit any file by hand. The setup wizard asks a few questions,
+writes `.env` for you, checks your Telegram bot, and can run the first
+collection right away.
+
+1. Install Go 1.27+ from <https://go.dev/dl/> (the only prerequisite).
+2. Start the wizard:
+   - **Windows:** double-click `scripts\setup.bat`
+   - **Linux/macOS:** `./scripts/setup.sh`
+3. Answer three questions and press Enter.
+
+That is it. Later runs use `scripts\run.bat` (Windows) or `./scripts/run.sh`.
+The detailed walkthrough, including how to get a Telegram bot token and chat ID,
+is in [docs/getting-started.md](docs/getting-started.md).
+
 ## Features
 
 - **Three storefront integrations** (Steam, Epic Games Store, GOG), each
@@ -31,7 +47,9 @@ platform — a Fly.io Scheduled Machine started by `fly machine run --schedule`.
 ## Architecture
 
 ```
-cmd/gamedrop          entry point, one cycle, exit codes
+cmd/gamedrop          entry point, one cycle, exit codes, --setup dispatch
+internal/app          the collection cycle itself (shared by setup and main)
+internal/setup        first-run wizard: questions, .env writing, Telegram check
 internal/config       env loading + validation
 internal/logger       slog setup (text for dev, JSON for production)
 internal/model        Offer, Store, OfferType, Availability, SourceStatus
@@ -45,6 +63,8 @@ internal/stores       adapter interface + registry
 internal/storage      SQLite: offers, history, source state, runs, outbox
 internal/notify       message rendering, Telegram sender, outbox processor
 internal/collector    cycle orchestration, concurrency, failure isolation
+scripts/setup.sh      first-run wizard (Linux/macOS)
+scripts/setup.bat     first-run wizard (Windows)
 scripts/run.sh        one-cycle helper (Linux/macOS)
 scripts/run.bat       one-cycle helper (Windows)
 ```
@@ -127,6 +147,15 @@ with code `2` without touching the database.
 
 Requires Go 1.27+.
 
+The quickest path is the wizard, which creates `.env` from `.env.example` and
+asks only what it needs:
+
+```bash
+go run ./cmd/gamedrop --setup   # or ./scripts/setup.sh, scripts\setup.bat
+```
+
+If you prefer to configure by hand:
+
 ```bash
 cp .env.example .env   # loaded automatically at startup
 
@@ -208,10 +237,14 @@ Expiration rules, in order of precedence:
 
 ## Telegram setup
 
+The setup wizard does this for you: it verifies the token with `getMe`, finds
+your chat ID from `getUpdates` (after you press Start in the bot chat), and can
+send a test message. Doing it by hand:
+
 1. Create a bot with [@BotFather](https://t.me/BotFather) and copy the token.
 2. Send `/start` to your bot.
 3. Read the chat ID from `https://api.telegram.org/bot<TOKEN>/getUpdates`.
-4. Set `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID`.
+4. Set `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID`, or rerun `gamedrop --setup`.
 
 Messages contain the game title, store, offer type, store region, known claim
 deadline, original price, and the store link. Messages are plain text (no parse
