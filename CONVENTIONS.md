@@ -53,6 +53,12 @@ request headers, or URLs with query strings.
 - Name tests after the expected behaviour; one behaviour per test.
 - Add a regression test with every bug fix, using the real payload as a fixture.
 
+## Commits
+
+- A message describes what changed and why, in the imperative mood.
+- No attribution, signatures, or trailers: no `Co-Authored-By`, no "Generated
+  with …", no tool names, no emojis.
+
 ## Dependencies and configuration
 
 - Adding a dependency requires justification; SQLite is the only external one.

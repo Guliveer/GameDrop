@@ -122,6 +122,14 @@ docs/                       architecture, development, testing, stores, database
 - No global mutable state; pass dependencies explicitly.
 - Small focused packages; comments explain *why*, not *what*.
 
+## Commits and generated content
+
+Never sign your work anywhere. Commit messages, code, comments, documentation,
+release notes, and generated files must not contain attribution, signatures, or
+trailers of any kind: no `Co-Authored-By`, no "Generated with …", no tool or
+model names, no emojis in signatures. A commit message states what changed and
+why, and then stops.
+
 ## Definition of done
 
 Code compiles, tests pass, docs updated (`docs/`, README, `.env.example` when
