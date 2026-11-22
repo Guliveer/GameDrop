@@ -2,7 +2,7 @@
 REM Run one GameDrop collection cycle from the repository root.
 REM
 REM   scripts\run.bat                  uses .env (or real environment variables)
-REM   set ENV_FILE_PATH=other.env & scripts\run.bat
+REM   set ENV_FILE_PATH=other.env ^& scripts\run.bat
 REM
 REM Variables already present in the environment win over .env entries.
 setlocal
@@ -14,8 +14,8 @@ if errorlevel 1 (
     exit /b 1
 )
 
-if not exist "%ENV_FILE_PATH%" if "%ENV_FILE_PATH%"=="" (
-    if not exist ".env" echo gamedrop: note: .env not found; using the current environment and defaults 1>&2
+if not defined ENV_FILE_PATH if not exist ".env" (
+    echo gamedrop: note: .env not found; using the current environment and defaults 1>&2
 )
 
 go run ./cmd/gamedrop %*
